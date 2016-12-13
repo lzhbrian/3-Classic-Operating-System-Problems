@@ -46,20 +46,19 @@ void exch(Datatype* a, Datatype* b) {
 	*b = temp;
 }
 
-int partition(Datatype* a, int low, int up)  
-{  
-    Datatype pivot = a[up];  
-    int i = low-1;  
-    for (int j = low; j < up; j++)  
-    {  
-        if(a[j] <= pivot)  
-        {  
-            i++;  
-            exch(&a[i], &a[j]);  
-        }  
-    }  
-    exch(&a[i+1], &a[up]);  
-    return i+1;  
+int partition(Datatype* a, int low, int up) {
+	Datatype pivot = a[up];  
+	int i = low-1;  
+	for (int j = low; j < up; j++)  
+	{  
+		if(a[j] <= pivot)  
+		{  
+			i++;  
+			exch(&a[i], &a[j]);  
+		}  
+	}  
+	exch(&a[i+1], &a[up]);  
+	return i+1;  
 }
 
 // 小于 1000 时调用的 quicksort
@@ -79,9 +78,9 @@ void *Quick_sort(void* para_s) {
 
 	// get received arg
 	struct para *recv_para;  
-    recv_para = (struct para *)para_s;  
-    int start_index = (*recv_para).start_index;  
-    int end_index = (*recv_para).end_index;  
+	recv_para = (struct para *)para_s;  
+	int start_index = (*recv_para).start_index;  
+	int end_index = (*recv_para).end_index;  
 
 	// length of data this thread can control
 	int data_length = end_index - start_index + 1;

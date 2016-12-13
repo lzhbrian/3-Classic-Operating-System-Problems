@@ -67,9 +67,9 @@
 
    	// get received arg
    	struct para *recv_para;  
-       recv_para = (struct para *)para_s;  
-       int start_index = (*recv_para).start_index;  
-       int end_index = (*recv_para).end_index;  
+   	recv_para = (struct para *)para_s;  
+   	int start_index = (*recv_para).start_index;  
+   	int end_index = (*recv_para).end_index;  
 
    	// length of data this thread can control
    	int data_length = end_index - start_index + 1;
@@ -102,6 +102,7 @@
    		cout << "\n ERROR creating back thread!" << endl;  
    		exit(1);
    	}
+
    	// Join front,back threads
    	if(pthread_join(front_thread, NULL)) {
    		cout << "\n ERROR joining front thread!" << endl; 
@@ -111,6 +112,7 @@
    		cout << "\n ERROR joining back thread!" << endl; 
    		exit(1);
    	}
+
    	return 0;
    }
    ```
@@ -132,18 +134,18 @@
    	*b = temp;
    }
    int partition(Datatype* a, int low, int up) {  
-       Datatype pivot = a[up];  
-       int i = low-1;  
-       for (int j = low; j < up; j++)  
-       {  
-           if(a[j] <= pivot)  
-           {  
-               i++;  
-               exch(&a[i], &a[j]);  
-           }  
-       }  
-       exch(&a[i+1], &a[up]);  
-       return i+1;  
+   	Datatype pivot = a[up];  
+   	int i = low-1;  
+   	for (int j = low; j < up; j++)  
+   	{  
+   		if(a[j] <= pivot)  
+   		{  
+   			i++;  
+   			exch(&a[i], &a[j]);  
+   		}  
+   	}  
+   	exch(&a[i+1], &a[up]);  
+   	return i+1;  
    }
    ```
 
