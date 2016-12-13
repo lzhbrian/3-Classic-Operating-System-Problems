@@ -1,3 +1,11 @@
+
+# Brian Lin,Tzu-Heng's Work
+# generate a file with 1,000,000 numbers
+
+# Mailto: lzhbrian@gmail.com
+# Github: github.com/lzhbrian
+# Linkedin: linkedin/in/lzhbrian
+
 import random
 
 fp = open('./Numbers.txt','w')
