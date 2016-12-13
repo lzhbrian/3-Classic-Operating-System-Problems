@@ -50,8 +50,8 @@
   max_x = 60000
   count = 0
   for x in xrange(0,length):
-  	print >> fp, (random.uniform(min_x, max_x))
-  	count += 1
+  		print >> fp, (random.uniform(min_x, max_x))
+  		count += 1
   print "Suc. print ", count, " numbers"
   ```
 
@@ -64,56 +64,56 @@
    ```c++
    // quick sort unit
    void *Quick_sort(void* para_s) {
-
-   	// get received arg
-   	struct para *recv_para;  
-   	recv_para = (struct para *)para_s;  
-   	int start_index = (*recv_para).start_index;  
-   	int end_index = (*recv_para).end_index;  
-
-   	// length of data this thread can control
-   	int data_length = end_index - start_index + 1;
-   	if (data_length <= 1000) {
-   		real_quick_sort(data, start_index, end_index);
-   		return 0;
-   	}
-
-   	int *pos = new int(1);
-   	*pos = partition(data, start_index, end_index);
-
-   	pthread_t front_thread;
-   	pthread_t back_thread;
-
-   	struct para para_front;
-   	struct para para_back;
-   	
-   	para_front.start_index = start_index;  
-   	para_front.end_index = *pos-1;
-
-   	para_back.start_index = *pos+1;  
-   	para_back.end_index = end_index;
-
-   	// Create front,back threads
-   	if(pthread_create(&front_thread, NULL, Quick_sort, &(para_front))) {  
-   		cout << "\n ERROR creating front thread!" << endl;  
-   		exit(1);
-   	}
-   	if(pthread_create(&back_thread, NULL, Quick_sort, &(para_back))) {  
-   		cout << "\n ERROR creating back thread!" << endl;  
-   		exit(1);
-   	}
-
-   	// Join front,back threads
-   	if(pthread_join(front_thread, NULL)) {
-   		cout << "\n ERROR joining front thread!" << endl; 
-   		exit(1);
-   	}
-   	if(pthread_join(back_thread, NULL)) {
-   		cout << "\n ERROR joining back thread!" << endl; 
-   		exit(1);
-   	}
-
-   	return 0;
+	
+	   	// get received arg
+	   	struct para *recv_para;  
+	   	recv_para = (struct para *)para_s;  
+	   	int start_index = (*recv_para).start_index;  
+	   	int end_index = (*recv_para).end_index;  
+	
+	   	// length of data this thread can control
+	   	int data_length = end_index - start_index + 1;
+	   	if (data_length <= 1000) {
+	   		real_quick_sort(data, start_index, end_index);
+	   		return 0;
+	   	}
+	
+	   	int *pos = new int(1);
+	   	*pos = partition(data, start_index, end_index);
+	
+	   	pthread_t front_thread;
+	   	pthread_t back_thread;
+	
+	   	struct para para_front;
+	   	struct para para_back;
+	   	
+	   	para_front.start_index = start_index;  
+	   	para_front.end_index = *pos-1;
+	
+	   	para_back.start_index = *pos+1;  
+	   	para_back.end_index = end_index;
+	
+	   	// Create front,back threads
+	   	if(pthread_create(&front_thread, NULL, Quick_sort, &(para_front))) {  
+	   		cout << "\n ERROR creating front thread!" << endl;  
+	   		exit(1);
+	   	}
+	   	if(pthread_create(&back_thread, NULL, Quick_sort, &(para_back))) {  
+	   		cout << "\n ERROR creating back thread!" << endl;  
+	   		exit(1);
+	   	}
+	
+	   	// Join front,back threads
+	   	if(pthread_join(front_thread, NULL)) {
+	   		cout << "\n ERROR joining front thread!" << endl; 
+	   		exit(1);
+	   	}
+	   	if(pthread_join(back_thread, NULL)) {
+	   		cout << "\n ERROR joining back thread!" << endl; 
+	   		exit(1);
+	   	}
+	
+	   	return 0;
    }
    ```
 
@@ -122,30 +122,30 @@
    ```c++
    // 小于 1000 时调用的 quicksort
    void real_quick_sort(Datatype* a, int left, int right) {
-   	if (right <= left) return;
-   	int pos = partition(a,left,right);
-   	real_quick_sort(a,left,pos-1);
-   	real_quick_sort(a,pos+1,right);
+	   	if (right <= left) return;
+	   	int pos = partition(a,left,right);
+	   	real_quick_sort(a,left,pos-1);
+	   	real_quick_sort(a,pos+1,right);
    }
    // exchange
    void exch(Datatype* a, Datatype* b) {
-   	Datatype temp = *a;
-   	*a = *b;
-   	*b = temp;
+	   	Datatype temp = *a;
+	   	*a = *b;
+	   	*b = temp;
    }
    int partition(Datatype* a, int low, int up) {  
-   	Datatype pivot = a[up];  
-   	int i = low-1;  
-   	for (int j = low; j < up; j++)  
-   	{  
-   		if(a[j] <= pivot)  
-   		{  
-   			i++;  
-   			exch(&a[i], &a[j]);  
-   		}  
-   	}  
-   	exch(&a[i+1], &a[up]);  
-   	return i+1;  
+	   	Datatype pivot = a[up];  
+	   	int i = low-1;  
+	   	for (int j = low; j < up; j++)  
+	   	{  
+	   		if(a[j] <= pivot)  
+	   		{  
+	   			i++;  
+	   			exch(&a[i], &a[j]);  
+	   		}  
+	   	}  
+	   	exch(&a[i+1], &a[up]);  
+	   	return i+1;  
    }
    ```
 
