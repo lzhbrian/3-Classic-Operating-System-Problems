@@ -6,13 +6,14 @@
 # Linkedin: linkedin/in/lzhbrian
 
 import sys
+buffer_size = int(sys.argv[1])
+print 'Running buffer = ', buffer_size, ' ...'
+
 f1 = open('./data/one_gig_file.txt','r+')
 f2 = open('./data/one_gig_file.txt','r+')
 
 # f1 = open('./data/small_file.txt','r+')
 # f2 = open('./data/small_file.txt','r+')
-
-buffer_size = 65536
 
 # inverse the data in buf1 & buf2
 def inverse_buf(buf1, buf2):

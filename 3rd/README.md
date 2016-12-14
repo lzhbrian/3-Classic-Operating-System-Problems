@@ -1,5 +1,11 @@
 # 存储管理问题 - 文件字节倒放问题
 
+* 无42 林子恒 2014011054
+* Brian Lin,Tzu-Heng's Work
+  * Mailto: [lzhbrian@gmail.com](lzhbrian@gmail.com)
+  * Github: [lzhbrian](github.com/lzhbrian)
+  * Linkedin: [lzhbrian](linkedin/in/lzhbrian)
+
 [TOC]
 
 ## 一、问题描述
@@ -22,240 +28,176 @@
 
 ### 1. 思路：
 
-- 因为我的电脑是 $*nix$ 系列的，所以我采用 __posix__ 的函数来实现进程、线程的操作
-- 本实验中，我采用 __多线程__、__共享内存__ 的方式来实现快速排序，主要思路如下：
-  - `Quick_sort()`函数：按照快速排序的思想，选定最后序列里最后一个数作为基准，将自己分成两半（大于基准，小于基准），再创建两个新线程递归地调用自己，分别处理这两半序列。
-  - 如果新线程所需要处理的数据数量小于1000，则调用`real_quick_sort()`函数实现这些数的快速排序
-  - 这里采用多线程的方式，所以我全局的申明了一个 `Datatype data[number_length]` 数组，即为这所有线程的共享内存；
-    - 同时，他们访问 `data[]` 的时候也并不会发生冲突，因为每个线程处理的都是这个数组里面不同范围的数据。
+- 我们采用python实现此次实验。
+- 调用numpy库里的$memmap()$函数，将文件映射到内存；然后直接将反转后的内存数据覆盖写原数据，即完成了对1GB字符文件的反转操作。
 
-### 2. 产生一个有$1,000,000$个数的文件：
+### 2. 产生一个大小为1GB的字符文件：
 
-- 我们首先编写 python 程序`generate_1m_numbers.py`来生成 $1,000,000$个随机小数，并将其写到一个文件`./Numbers.txt`里面，代码如下：
+- 我们首先编写 python 程序`generate_1g_file.py`来生成$10^9$个字符，大小为1GB，将其写入`./one_gig_file.txt`里面，代码如下：
 
   ```python
-  import random
-  fp = open('./Numbers.txt','w')
-  length = 1000000
-  min_x = 0
-  max_x = 60000
-  count = 0
-  for x in xrange(0,length):
-  		print >> fp, (random.uniform(min_x, max_x))
-  		count += 1
-  print "Suc. print ", count, " numbers"
+  fp = open('./data/one_gig_file.txt','w')
+  data_length = 10000000
+  from random import Random
+  def random_str(randomlength=8):
+  	str = ''
+  	chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789'
+  	length = len(chars) - 1
+  	random = Random()
+  	for i in range(randomlength):
+  		str += chars[random.randint(0, length)]
+  	return str
+  for x in range(1,101):
+  	a = random_str(data_length)
+  	print(a, file=fp, end='')
+  print('Finished ', x, ' times')
   ```
 
-### 3. 实现快速排序：
+### 3. 常规缓冲区方法实现文件字节倒放
 
-1. `Quick_sort()`函数：
+* 采用缓冲区的方式实现的基本思路为：
 
-   ```c++
-   // quick sort unit
-   void *Quick_sort(void* para_s) {
+  * 取文件前 $buffersize$ 个字节与后 $buffersize$ 个字节，反转之后交换
+  * 如此重复，直到将文件全部取完。
 
-      	// get received arg
-      	struct para *recv_para;  
-      	recv_para = (struct para *)para_s;  
-      	int start_index = (*recv_para).start_index;  
-      	int end_index = (*recv_para).end_index;  
+* 代码如下：
 
-      	// length of data this thread can control
-      	int data_length = end_index - start_index + 1;
-      	if (data_length <= 1000) {
-      		real_quick_sort(data, start_index, end_index);
-      		return 0;
-      	}
+  ```python
+  import sys
+  buffer_size = sys.argv[1]
 
-      	int *pos = new int(1);
-      	*pos = partition(data, start_index, end_index);
+  f1 = open('./data/one_gig_file.txt','r+')
+  f2 = open('./data/one_gig_file.txt','r+')
+  # f1 = open('./data/small_file.txt','r+')
+  # f2 = open('./data/small_file.txt','r+')
 
-      	pthread_t front_thread;
-      	pthread_t back_thread;
+  # inverse the data in buf1 & buf2
+  def inverse_buf(buf1, buf2):
+    	temp1 = buf2[::-1]
+    	temp2 = buf1[::-1]
+    	return [temp1, temp2]
 
-      	struct para para_front;
-      	struct para para_back;
-      	
-      	para_front.start_index = start_index;  
-      	para_front.end_index = *pos-1;
+  # f2: move cursor to file end
+  f2.seek(0,2)
+  f2.seek(-1,1) # if \n is in last data
 
-      	para_back.start_index = *pos+1;  
-      	para_back.end_index = end_index;
+  while 1:
+    	# f1, from front
+    	buf1 = f1.read(buffer_size).decode('UTF-8')
+    	# f2, from end
+    	f2.seek(-buffer_size,1)
+    	buf2 = f2.read(buffer_size).decode('UTF-8')
 
-      	// Create front,back threads
-      	if(pthread_create(&front_thread, NULL, Quick_sort, &(para_front))) {  
-      		cout << "\n ERROR creating front thread!" << endl;  
-      		exit(1);
-      	}
-      	if(pthread_create(&back_thread, NULL, Quick_sort, &(para_back))) {  
-      		cout << "\n ERROR creating back thread!" << endl;  
-      		exit(1);
-      	}
+    	# inverse buf1, buf2
+    	[buf1, buf2] = inverse_buf(buf1, buf2)
 
-      	// Join front,back threads
-      	if(pthread_join(front_thread, NULL)) {
-      		cout << "\n ERROR joining front thread!" << endl; 
-      		exit(1);
-      	}
-      	if(pthread_join(back_thread, NULL)) {
-      		cout << "\n ERROR joining back thread!" << endl; 
-      		exit(1);
-      	}
+    	# write f1
+    	f1.seek(-buffer_size,1)
+    	f1.write(buf1)
+    	# write f2
+    	f2.seek(-buffer_size,1)
+    	f2.write(buf2)
 
-      	return 0;
-   }
-   ```
+    	# move cursor for next
+    	f2.seek(-buffer_size,1)
 
-2. 个数<1000时的快速排序`real_quick_sort`：
+    	gap = f2.tell() - f1.tell()
+    	if gap == 0:
+    		f1.close()
+    		f2.close()
+    		exit()
+    	elif gap < buffer_size*2: # last round
+    		buffer_size = gap/2
+    		# f1, from front
+    		buf1 = f1.read(buffer_size).decode('UTF-8')
+    		# f2, from end
+    		f2.seek(-buffer_size,1)
+    		buf2 = f2.read(buffer_size).decode('UTF-8')
 
-   ```c++
-   // 小于 1000 时调用的 quicksort
-   void real_quick_sort(Datatype* a, int left, int right) {
-      	if (right <= left) return;
-      	int pos = partition(a,left,right);
-      	real_quick_sort(a,left,pos-1);
-      	real_quick_sort(a,pos+1,right);
-   }
-   // exchange
-   void exch(Datatype* a, Datatype* b) {
-      	Datatype temp = *a;
-      	*a = *b;
-      	*b = temp;
-   }
-   int partition(Datatype* a, int low, int up) {  
-      	Datatype pivot = a[up];  
-      	int i = low-1;  
-      	for (int j = low; j < up; j++)  
-      	{  
-      		if(a[j] <= pivot)  
-      		{  
-      			i++;  
-      			exch(&a[i], &a[j]);  
-      		}  
-      	}  
-      	exch(&a[i+1], &a[up]);  
-      	return i+1;  
-   }
-   ```
+    		# inverse buf1, buf2
+    		[buf1, buf2] = inverse_buf(buf1, buf2)
 
-3. 主函数：
+    		# write f1
+    		f1.seek(-buffer_size,1)
+    		f1.write(buf1)
+    		# write f2
+    		f2.seek(-buffer_size,1)
+    		f2.write(buf2)
+    		break
+  f1.close()
+  f2.close()
+  ```
 
-   ```c++
-   /******* Main func **************/
-   int main(int argc, char * argv[])  
-   {
+### 4. 采用内存映射的方法实现文件字节倒放
 
-      	// Start time
-      	open_time = getSystemTime();
+* 调用numpy库里的$memmap()$函数，将文件反转之后覆盖写原数据，代码如下：
 
-      	// Read 1m numbers
-      	ifstream file("./Numbers.txt");
-      	while (!file.eof()) {
-      		file >> data[n];
-      		n = n + 1;
-      	}
+  ```python
+  import sys
+  import numpy as np
 
-      	// indicator of success read files
-      	cout << getSystemTime() - open_time << " ms used to read " << numbers_length << " numbers..." << endl;
+  # open source fike
+  f = np.memmap('./data/one_gig_file.txt', mode='r+')
 
-      	// test for read numbers
-      	// cout << data[100] << ", " << data[200] << ", " << data[numbers_length-1] << ", " << data[numbers_length] << endl;
+  # calc length
+  data_length = len(f)
 
-      	pthread_t main_thread;
+  # 'data_length-1' because of the \n in the last
+  reversed_arr = f[0:data_length-1][::-1]
 
-      	struct para pata_main;  
-      	pata_main.start_index = 0;  
-      	pata_main.end_index = numbers_length-1;
+  # overwrite f
+  f[0:data_length-1] = reversed_arr[:]
 
-      	// Create main thread
-      	if(pthread_create( &main_thread, NULL, Quick_sort, &(pata_main) )) {  
-      		cout << "\n ERROR creating first main thread!" << endl;  
-      		exit(1);
-      	}
-
-      	// Join main thread
-      	if(pthread_join(main_thread, NULL)) {
-      		cout << "\n ERROR joining first main thread!" << endl; 
-      		exit(1);
-      	}
-      	
-
-      	// Check result
-      	cout << "First 10 numbers: \n";
-      	for (int i = 0; i < 10; ++i) {
-      		cout << data[i] << endl;
-      	}
-      	cout << endl;
-      	cout << "Last 10 numbers: \n";
-      	for (int i = numbers_length-10; i < numbers_length; ++i) {
-      		cout << data[i] << endl;
-      	}
-
-      	// indicator of runtime
-      	cout << getSystemTime() - open_time << " ms used to finish the whole program! " << endl;
-
-      	// write sorted result to file
-      	ofstream fout("./sorted_Numbers.txt");
-      	for (int i = 0; i < numbers_length; ++i) {
-      		fout << data[i] << endl;
-      	}
-      	return 0;
-   }
-   ```
+  # close file
+  f.flush()
+  ```
 
 <div style="page-break-after: always;"></div>
 
 ## 三、实验结果
 
-1. 通过`generate_1m_numbers.py`生成的文件为：`Numbers.txt`，我们设置的数范围为：0～60,000
+1. 通过`generate_1m_numbers.py`生成的文件为：`one_gig_file.txt`，其前10个、后10个字符分别为
 
-2. 通过`quick_sort_multithread.cpp`的操作之后生成的排序后的文件为：`sorted_Numbers.txt`，其前十行、后十行代码如下：
+   * ![before_front](before_front.png)
+   * ![before_back](before_back.png)
 
-   ```
-   0.0153327
-   0.13771
-   0.241184
-   0.24939
-   0.292859
-   0.359523
-   0.375892
-   0.419432
-   0.48103
-   0.507452
-   ```
 
-   ```
-   59999.3
-   59999.4
-   59999.5
-   59999.5
-   59999.6
-   59999.6
-   59999.7
-   59999.8
-   60000
-   60000
-   ```
+2. 通过内存映射 `memmap_method.py` 或常规方法 `normal_method.py` ，反转字串后的前10个、后10个字符为：
 
-   可以看到，我们的程序成功地对原数据排了序。
+   * ![after_front](after_front.png)
+   * ![after_back](after_back.png)
+
+3. 性能：
+
+   1. 采用 $32768Byte$ 缓冲区时，常规方法所用的时间为：8.622 s
+   2. 采用内存映射方法时，所用的时间为：5.266 s
 
 <div style="page-break-after: always;"></div>
 
 ## 四、思考题
 
 1. 采用常规的文件访问方法时，改变缓冲区的大小对程序的性能有什么影响？请用图表描述缓冲区的大小与程序性能之间的关系。
-   * ​
-2. 内存映射文件方法和常规的文件访问方法在性能上有什么差异，试分析其原因。
+2. | 大小B  | $2^7$  | $2^9$  | $2^{11}$ | $2^{13}$ | $2^{15}$ | $2^{17}$ | $2^{19}$ | $2^{21}$ | $2^{23}$ |
+   | :--: | ------ | :----: | :------: | :------: | :------: | :------: | :------: | :------: | :------: |
+   | 时间s  | 83.777 | 57.660 |  31.087  |  15.584  |  8.622   |  7.612   |  7.373   |  6.754   |  7.030   |
 
+   * 可以看到，一开始的时候，缓冲区越大，程序效率就越高
+     * 但到达一定的水平之后，缓冲区变大并不会再对效率有显著的提高
+   * 本测试所使用机器为：
+     * 2014 late Macbook Air 8GB DDR3 RAM, 1.4GHz Intel Core i5 CPU, 256GB SSD
 
+3. 内存映射文件方法和常规的文件访问方法在性能上有什么差异，试分析其原因。
+   * 首先是实现复杂度，由上面我们实现的代码可以看到，使用内存映射的方法编写的python程序只需要7行...而使用常规方法则需要60+行才能完成，使用常规内存映射方法的工作量小很多
+   * 在访问很大的文件的时候，采用内存映射效率会比使用常规的文件访问方法高很多；但在访问小文件的时候，这个优势可能就没有那么明显了，甚至可能因为调用一些函数需要花费比较多的时间。
 
 
 ## 五、感想
 
-- 有了第一题创建线程的经验基础，再做这道题的时候就比较熟练了
-- 在这次实验中，我对线程的创建、使用又有了更加深刻的理解
-
-
+- 本来第一、第二题也想要用python来实现，但是考虑到python的多线程并不是真正的多线程，所以最后还是向C++妥协了QAQ
+  - 这题终于可以使用python来实现，而且使用内存映射只用了7行的代码（得意）～
+- 一开始做这道题的时候，我理解为将一个文件读入反转后写到另外一个文件里面，直到我看到了思考题里面提到的“缓冲区”。
+  - 我本来是从原文件的尾部开始读取，然后一个字节一个字节的直接写入另外一个文件，其实就是相当于使用了大小为1的缓冲区
+- 三次实验终于结束！感谢老师、助教的耐心帮助与批改～
 
 
 
