@@ -3,8 +3,8 @@
 * 无42 林子恒 2014011054
 * Brian Lin,Tzu-Heng's Work
   * Mailto: [lzhbrian@gmail.com](lzhbrian@gmail.com)
-  * Github: [lzhbrian](github.com/lzhbrian)
-  * Linkedin: [lzhbrian](linkedin/in/lzhbrian)
+  * Github: [lzhbrian](http://github.com/lzhbrian)
+  * Linkedin: [lzhbrian](http://linkedin.com/in/lzhbrian)
 
 [TOC]
 

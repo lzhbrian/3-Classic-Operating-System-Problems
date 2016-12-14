@@ -1,10 +1,16 @@
 # OS Project
 ***
 
-* Brian Lin,Tzu-Heng's Work
-	* Mailto: [lzhbrian@gmail.com](lzhbrian@gmail.com)
-	* Github: [lzhbrian](github.com/lzhbrian)
-	* Linkedin: [lzhbrian](linkedin/in/lzhbrian)
+无42 林子恒 2014011054
+- Brian Lin,Tzu-Heng's Work
+
+  - Mailto: [lzhbrian@gmail.com](lzhbrian@gmail.com)
+
+  - Github: [http://github.com/lzhbrian/OS_project](http://github.com/lzhbrian/OS_project)
+
+  - Linkedin: [http://linkedin.com/in/lzhbrian](http://linkedin.com/in/lzhbrian)
+
+    ​
 
 ### This repository contains implementation of 3 classic OS problems.
 

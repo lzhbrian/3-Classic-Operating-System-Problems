@@ -3,8 +3,8 @@
 - 无42 林子恒 2014011054
 - Brian Lin,Tzu-Heng's Work
   - Mailto: [lzhbrian@gmail.com](lzhbrian@gmail.com)
-  - Github: [lzhbrian](github.com/lzhbrian)
-  - Linkedin: [lzhbrian](linkedin/in/lzhbrian)
+  - Github: [lzhbrian](http://github.com/lzhbrian)
+  - Linkedin: [lzhbrian](http://linkedin.com/in/lzhbrian)
 
 [TOC]
 
@@ -130,6 +130,7 @@
       		now = getSystemTime();
       		cout << (now - open_time)/1000 << ", Customer " << Customers[cus_No].id << " comes to the bank!" << endl;
       	pthread_mutex_unlock(&mutex_cout);
+   ```
 
 
       	// P: 顾客多一个资源，相当于顾客拿号
@@ -140,10 +141,10 @@
       		pthread_mutex_unlock(&mutex_customers);	// free customer
       	// V: 柜员少一个资源，相当于等待柜员叫号
       	sem_wait(sem_servers);
-
+    
       	// 记录开始服务的时间
       	Customers[cus_No].start_serve_time = (now - open_time)/1000;
-
+    
       	return 0;
    }
    ```
@@ -314,11 +315,11 @@
 
 1. 一个很简单的例子，3个顾客，2个柜员，如下：
 
-   1. | 顾客编号 | 进入时间 | 服务时间 |
-      | ---- | ---- | ---- |
-      | 1    | 1    | 10   |
-      | 2    | 5    | 2    |
-      | 3    | 6    | 3    |
+   | 顾客编号 | 进入时间 | 服务时间 |
+   | ---- | ---- | ---- |
+   | 1    | 1    | 10   |
+   | 2    | 5    | 2    |
+   | 3    | 6    | 3    |
 
    输出结果为：
 
@@ -331,18 +332,18 @@
 
 2. 一个稍微复杂一些的例子，10个顾客，4个柜员，如下：
 
-   1. | 顾客编号 | 进入时间 | 服务时间 |
-      | ---- | ---- | ---- |
-      | 1    | 1    | 10   |
-      | 2    | 5    | 2    |
-      | 3    | 6    | 3    |
-      | 4    | 6    | 5    |
-      | 5    | 3    | 8    |
-      | 6    | 7    | 1    |
-      | 7    | 10   | 5    |
-      | 8    | 9    | 7    |
-      | 9    | 2    | 8    |
-      | 10   | 8    | 2    |
+   | 顾客编号 | 进入时间 | 服务时间 |
+   | ---- | ---- | ---- |
+   | 1    | 1    | 10   |
+   | 2    | 5    | 2    |
+   | 3    | 6    | 3    |
+   | 4    | 6    | 5    |
+   | 5    | 3    | 8    |
+   | 6    | 7    | 1    |
+   | 7    | 10   | 5    |
+   | 8    | 9    | 7    |
+   | 9    | 2    | 8    |
+   | 10   | 8    | 2    |
 
    输出结果为：
 
