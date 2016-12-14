@@ -130,88 +130,81 @@
       		now = getSystemTime();
       		cout << (now - open_time)/1000 << ", Customer " << Customers[cus_No].id << " comes to the bank!" << endl;
       	pthread_mutex_unlock(&mutex_cout);
-   ```
+       	// P: 顾客多一个资源，相当于顾客拿号
+     	sem_post(sem_customers);
+     		pthread_mutex_lock(&mutex_customers);	// lock customer
+     			queueing_cus_list.push_back(cus_No);// 顾客入队
+     			now = getSystemTime();
+     		pthread_mutex_unlock(&mutex_customers);	// free customer
+     	// V: 柜员少一个资源，相当于等待柜员叫号
+     	sem_wait(sem_servers);
 
+     	// 记录开始服务的时间
+     	Customers[cus_No].start_serve_time = (now - open_time)/1000;
 
-      	// P: 顾客多一个资源，相当于顾客拿号
-      	sem_post(sem_customers);
-      		pthread_mutex_lock(&mutex_customers);	// lock customer
-      			queueing_cus_list.push_back(cus_No);// 顾客入队
-      			now = getSystemTime();
-      		pthread_mutex_unlock(&mutex_customers);	// free customer
-      	// V: 柜员少一个资源，相当于等待柜员叫号
-      	sem_wait(sem_servers);
-    
-      	// 记录开始服务的时间
-      	Customers[cus_No].start_serve_time = (now - open_time)/1000;
-    
-      	return 0;
+     	return 0;
    }
    ```
 
-3. 柜员线程：
+
+
+
+3. 柜员线程：   
 
    ```c++
    // 柜员服务 func
    void *Serve_do(void* server_No_v) {
-      	int server_No = *(int*)server_No_v;
-      	while(1) {
+     int server_No = *(int*)server_No_v;
+     while(1) {
 
-      		// V: 顾客少一个资源，相当于柜员叫号
-      		sem_wait(sem_customers);
+       // V: 顾客少一个资源，相当于柜员叫号
+       sem_wait(sem_customers);
 
+       // 有没有柜员叫同一个号
+       pthread_mutex_lock(&mutex_servers);		// lock server
+       int cus_No = queueing_cus_list[0];		// 获取第一个顾客信息
+       queueing_cus_list.erase(queueing_cus_list.begin());
+       start_served_cus_list.push_back(cus_No);	// 只要开始服务就加入队列
+       // cout << start_served_cus_list.size() << endl;
 
-      		// 有没有柜员叫同一个号
-      		pthread_mutex_lock(&mutex_servers);		// lock server
-      			int cus_No = queueing_cus_list[0];		// 获取第一个顾客信息
-      			queueing_cus_list.erase(queueing_cus_list.begin());
+       Customers[cus_No].server_No = server_No;	// 记录服务这个顾客的柜员
+       pthread_mutex_unlock(&mutex_servers);	// unlock server
 
-      			start_served_cus_list.push_back(cus_No);	// 只要开始服务就加入队列
-      			// cout << start_served_cus_list.size() << endl;
+       pthread_mutex_lock(&mutex_cout);
+       now = getSystemTime();
+       cout << (now - open_time)/1000 << ", Customer " << Customers[cus_No].id << " starts being served by server " << server_No << endl;
+       Customers[cus_No].start_serve_time = (now - open_time)/1000;
+       pthread_mutex_unlock(&mutex_cout);
 
-      			Customers[cus_No].server_No = server_No;	// 记录服务这个顾客的柜员
-      		pthread_mutex_unlock(&mutex_servers);	// unlock server
+       sleep(Customers[cus_No].serve_time);	// 服务
 
+       pthread_mutex_lock(&mutex_servers);		// lock server
+       if (start_served_cus_list.size() == n)
+       {
+         pthread_mutex_lock(&mutex_cout);
+         now = getSystemTime();
+         cout << (now - open_time)/1000 << ", Customer " << Customers[cus_No].id << " suc. served by server " << server_No << endl;
+         Customers[cus_No].leave_time = (now - open_time)/1000;
+         pthread_mutex_unlock(&mutex_cout);
 
-      		pthread_mutex_lock(&mutex_cout);
-      			now = getSystemTime();
-      			cout << (now - open_time)/1000 << ", Customer " << Customers[cus_No].id << " starts being served by server " << server_No << endl;
-      			Customers[cus_No].start_serve_time = (now - open_time)/1000;
-      		pthread_mutex_unlock(&mutex_cout);
+         cout << server_No << " server end!" << endl;
+         // 如果所有顾客都完成服务了，就break
+         pthread_mutex_unlock(&mutex_servers);	// unlock server
+         break;
+       }
+       pthread_mutex_unlock(&mutex_servers);	// unlock server
 
+       pthread_mutex_lock(&mutex_cout);
+       now = getSystemTime();
+       cout << (now - open_time)/1000 << ", Customer " << Customers[cus_No].id << " suc. served by server " << server_No << endl;
+       Customers[cus_No].leave_time = (now - open_time)/1000;
+       pthread_mutex_unlock(&mutex_cout);
 
-      		sleep(Customers[cus_No].serve_time);	// 服务
+       // 柜员多一个资源，相当于柜员完成一个服务
+       sem_post(sem_servers);
 
-
-      		pthread_mutex_lock(&mutex_servers);		// lock server
-      			if (start_served_cus_list.size() == n)
-      			{
-      				pthread_mutex_lock(&mutex_cout);
-      					now = getSystemTime();
-      					cout << (now - open_time)/1000 << ", Customer " << Customers[cus_No].id << " suc. served by server " << server_No << endl;
-      					Customers[cus_No].leave_time = (now - open_time)/1000;
-      				pthread_mutex_unlock(&mutex_cout);
-      				
-      				cout << server_No << " server end!" << endl;
-      				// 如果所有顾客都完成服务了，就break
-      				pthread_mutex_unlock(&mutex_servers);	// unlock server
-      				break;
-      			}
-      		pthread_mutex_unlock(&mutex_servers);	// unlock server
-
-
-      		pthread_mutex_lock(&mutex_cout);
-      			now = getSystemTime();
-      			cout << (now - open_time)/1000 << ", Customer " << Customers[cus_No].id << " suc. served by server " << server_No << endl;
-      			Customers[cus_No].leave_time = (now - open_time)/1000;
-      		pthread_mutex_unlock(&mutex_cout);
-
-
-      		// 柜员多一个资源，相当于柜员完成一个服务
-      		sem_post(sem_servers);
-
-      	}
-      	return 0;
+     }
+     return 0;
    }
    ```
 
