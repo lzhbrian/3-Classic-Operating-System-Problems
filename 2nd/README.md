@@ -1,5 +1,11 @@
 # 高级进程间通信问题 - 快速排序问题
 
+- 无42 林子恒 2014011054
+- Brian Lin,Tzu-Heng's Work
+  - Mailto: [lzhbrian@gmail.com](lzhbrian@gmail.com)
+  - Github: [lzhbrian](github.com/lzhbrian)
+  - Linkedin: [lzhbrian](linkedin/in/lzhbrian)
+
 [TOC]
 
 ## 一、问题描述

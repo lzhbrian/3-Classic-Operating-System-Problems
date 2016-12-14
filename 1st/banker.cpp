@@ -21,7 +21,7 @@ using namespace std;
 
 
 # define customer_num 40   	// 最大顾客数目
-# define server_num 4     	// 柜员数目
+# define server_num 2     	// 柜员数目
 vector<int> queueing_cus_list(0);		// 正在等待的顾客 list
 vector<int> start_served_cus_list(0);	// 完成服务的顾客 list
 	// server 从 queueing_cus_list 里面找寻正在等待的 customer	
@@ -54,7 +54,6 @@ pthread_mutex_t mutex_cout = PTHREAD_MUTEX_INITIALIZER;
 /******* Customer 结构体 *********/
 typedef struct Customer_struct
 {
-
 	int id;
 	int enter_time;			// known
 	int serve_time;			// known
@@ -80,7 +79,6 @@ typedef struct Customer_struct
 		leave_time = 0; 		// unknown
 		server_No = 0;
 	}
-
 } Customer;
 
 Customer Customers[customer_num];
@@ -175,10 +173,13 @@ void *Customer_do(void* cus_No_v) {
 		pthread_mutex_lock(&mutex_customers);	// lock customer
 			queueing_cus_list.push_back(cus_No);// 顾客入队
 			now = getSystemTime();
-			Customers[cus_No].start_serve_time = (now - open_time)/1000;	// 记录开始服务的时间
 		pthread_mutex_unlock(&mutex_customers);	// free customer
 	// V: 柜员少一个资源，相当于等待柜员叫号
 	sem_wait(sem_servers);
+
+	// 记录开始服务的时间
+	Customers[cus_No].start_serve_time = (now - open_time)/1000;
+
 	return 0;
 }
 /********************************/
@@ -196,7 +197,7 @@ int main(int argc, char * argv[])
 
 	// Read File into struct
 	// n: 一共有多少 顾客;
-	ifstream file("./Customer.txt");
+	ifstream file("./Customer_easy.txt");
 	while (!file.eof())
 	{
 		file >> id >> enter_time >> serve_time;
