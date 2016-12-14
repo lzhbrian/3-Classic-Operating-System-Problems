@@ -1,4 +1,3 @@
-
 # Brian Lin,Tzu-Heng's Work
 # Reverse a big char file by memmap in python.numpy
 
@@ -17,7 +16,8 @@ f = np.memmap('./data/one_gig_file.txt', mode='r')
 # calc length
 data_length = len(f)
 
-# open write file
+# open write file, 
+# 'data_length-1' because of the \n in the last
 fp = np.memmap('./data/reversed_file.txt', shape=(data_length-1), mode='w+')
 
 # from 0 to data_length-2, does not include data_length-2
